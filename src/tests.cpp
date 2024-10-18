@@ -1,13 +1,20 @@
 #include "tests.h"
 
 // 练习1，实现库函数strlen
-int my_strlen(char *str) {
+int my_strlen(char *str) 
+{
     /**
      * 统计字符串的长度，太简单了。
      */
 
     // IMPLEMENT YOUR CODE HERE
-    return 0;
+    int length=0;
+    while(*str)
+    {
+        length++;
+        str++;
+    }
+    return length;
 }
 
 
@@ -17,6 +24,16 @@ void my_strcat(char *str_1, char *str_2) {
      * 将字符串str_2拼接到str_1之后，我们保证str_1指向的内存空间足够用于添加str_2。
      * 注意结束符'\0'的处理。
      */
+    while (*str_1)
+    {
+        *str_1++;
+    }
+    while (*str_2)
+    {
+        *str_1=*str_2;
+        *str_1++;
+        *str_2++;
+    }
 
     // IMPLEMENT YOUR CODE HERE
 }
@@ -31,7 +48,26 @@ char* my_strstr(char *s, char *p) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    return 0;
+    if (!*p) 
+    {
+        return s;
+    }
+
+    for (int i = 0; s[i] != '\0'; i++) 
+    {
+        int found = i;
+        int j = 0;
+        while (s[found] == p[j] && p[j] != '\0') 
+        {
+            found++;
+            j++;
+        }
+        if (p[j] == '\0') 
+        {
+            return s + i;
+        }
+    }
+    return nullptr;
 }
 
 
@@ -96,7 +132,13 @@ void rgb2gray(float *in, float *out, int h, int w) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    // ...
+    for (int i=0 ; i<w*h ; i++)
+    {
+        float gray=(0.1140*in[0]+0.5870*in[1]+0.2989*in[2]);
+        *out=gray;
+        in+=3;
+        out+=1;
+    }
 }
 
 // 练习5，实现图像处理算法 resize：缩小或放大图像
@@ -184,8 +226,8 @@ void resize(float *in, float *out, int h, int w, int c, float scale) {
      *
      *      不难发现，在这种情况下：Dx = Dy = 1（原图中相邻的四个像素横竖距离是1）
      *      所以，上面的公式可以化简为：
-     *          Q = P1 * (1 - dx)(1 - dy) + P2 * dx(1 - dy)
-     *            + P3 * (1 - dx)dy + P4 * dxdy
+     *          Q = P1 * (1 - x + x1)(1 - y+y1) + P2 * (x - x1)(1 - y+y1)
+     *            + P3 * (1 - x + x1)(y-y1) + P4 * (x-x1)(y-y1)
      * HINT:
      *     1. 对于每个 dst 中的像素点 (x, y)，先计算出其在 src 中的坐标 float(x0, y0)，
      *     2. 然后计算出其在 src 中的四个邻居点:
@@ -198,6 +240,31 @@ void resize(float *in, float *out, int h, int w, int c, float scale) {
 
     int new_h = h * scale, new_w = w * scale;
     // IMPLEMENT YOUR CODE HERE
+    for (int i = 0; i < new_h; i++) 
+    {
+        for (int j = 0; j < new_w; j++) 
+        {    
+            double x = (double)j / scale;
+            double y = (double)i / scale;
+            int x1 = static_cast<int>(x);
+            int y1 = static_cast<int>(y);
+            int x2 = (x1 + 1>w - 1?w-1:x1+1);
+            int y2 = (y1 + 1>h - 1?h-1:y1+1);
+
+            float a = x - x1;
+            float b = y - y1;
+
+            for (int k = 0 ; k<c ; k++) 
+            {
+                float p1 = in[(y1*w+x1)*c+k];
+                float p2 = in[(y1*w+x2)*c+k];
+                float p3 = in[(y2*w+x1)*c+k];
+                float p4 = in[(y2*w+x2)*c+k];
+
+                out[(i * new_w + j) * c + k] = (p1 * (1 - a) * (1 - b) + p2 * a * (1 - b) + p3 * (1 - a) * b + p4 * a * b);
+            }
+        }
+    }
 
 }
 
@@ -221,4 +288,24 @@ void hist_eq(float *in, int h, int w) {
      */
 
     // IMPLEMENT YOUR CODE HERE
+    int n[256]={0};
+    double s[256]={0};
+
+    for(int i=0 ; i<h*w ; i++)
+    {
+        n[(int)(in[i])]+=1;
+    }
+
+    for(int i=0 ; i<256 ; i++)
+    {
+        for(int j=0 ; j<i ; j++)
+        {
+            s[i]+=(double)n[j]/(h*w);
+        }
+    }
+
+    for(int i=0 ; i<h*w ; i++)
+    {
+        in[i]=s[(int)in[i]]*255;        
+    }
 }

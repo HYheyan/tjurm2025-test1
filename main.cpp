@@ -72,7 +72,7 @@ void test_strcat() {
 
     strcat(str1, str2);
     my_strcat(str1_tmp, str2_tmp);
-
+    
     if (!strcmp(str1, str1_tmp)) {
         std::cout << "通过" << std::endl;
     } else {
@@ -124,7 +124,6 @@ void test_hist_eq() {
     free(img);
     std::cout << std::endl << std::endl;
 }
-
 
 void test_resize() {
     char *path = "../images/resize/input.jpg";
